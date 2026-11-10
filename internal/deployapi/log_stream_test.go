@@ -79,7 +79,7 @@ func TestDecodeLogStreamUsesDiscriminator(t *testing.T) {
 		},
 		{
 			name:     "posthog logs",
-			payload:  `{"logStreamType":"posthog_logs","id":"ls_5","status":{"type":"active"},"host":"https://eu.posthog.com"}`,
+			payload:  `{"logStreamType":"postHogLogs","id":"ls_5","status":{"type":"active"},"host":"https://eu.posthog.com"}`,
 			wantType: LogStreamPostHogLogs,
 			check: func(t *testing.T, s *LogStream) {
 				if s.PostHogLogs == nil {
@@ -89,7 +89,7 @@ func TestDecodeLogStreamUsesDiscriminator(t *testing.T) {
 		},
 		{
 			name:     "posthog error tracking",
-			payload:  `{"logStreamType":"posthog_error_tracking","id":"ls_6","status":{"type":"active"}}`,
+			payload:  `{"logStreamType":"postHogErrorTracking","id":"ls_6","status":{"type":"active"}}`,
 			wantType: LogStreamPostHogErrorTracking,
 			check: func(t *testing.T, s *LogStream) {
 				if s.PostHogErrorTracking == nil {
@@ -239,5 +239,35 @@ func TestCreateLogStreamWithoutSecret(t *testing.T) {
 
 	if created.HMACSecret != "" {
 		t.Errorf("HMACSecret = %q, want empty", created.HMACSecret)
+	}
+}
+
+// The discriminator values are written by hand, so pin them to the ones the
+// generated client takes from the Deployment Platform API spec, for both
+// creating a stream and reading one back. The PostHog sinks once diverged
+// (snake_case here, camelCase in the API), and Convex rejected them.
+func TestLogStreamTypesMatchGeneratedClient(t *testing.T) {
+	cases := []struct {
+		got    LogStreamType
+		create string
+		config string
+	}{
+		{LogStreamDatadog, string(CreateLogStreamArgs0LogStreamTypeDatadog), string(LogStreamConfig0LogStreamTypeDatadog)},
+		{LogStreamWebhook, string(CreateLogStreamArgs1LogStreamTypeWebhook), string(LogStreamConfig1LogStreamTypeWebhook)},
+		{LogStreamAxiom, string(CreateLogStreamArgs2LogStreamTypeAxiom), string(LogStreamConfig2LogStreamTypeAxiom)},
+		{LogStreamSentry, string(CreateLogStreamArgs3LogStreamTypeSentry), string(LogStreamConfig3LogStreamTypeSentry)},
+		{LogStreamPostHogLogs, string(CreateLogStreamArgs4LogStreamTypePostHogLogs), string(LogStreamConfig4LogStreamTypePostHogLogs)},
+		{LogStreamPostHogErrorTracking, string(CreateLogStreamArgs5LogStreamTypePostHogErrorTracking), string(LogStreamConfig5LogStreamTypePostHogErrorTracking)},
+	}
+	if len(cases) != len(LogStreamTypes) {
+		t.Fatalf("checked %d log stream types, LogStreamTypes has %d", len(cases), len(LogStreamTypes))
+	}
+	for _, c := range cases {
+		if string(c.got) != c.create {
+			t.Errorf("%q: create_log_stream expects %q", c.got, c.create)
+		}
+		if string(c.got) != c.config {
+			t.Errorf("%q: log stream configs carry %q", c.got, c.config)
+		}
 	}
 }

@@ -19,8 +19,8 @@ const (
 	LogStreamWebhook              LogStreamType = "webhook"
 	LogStreamAxiom                LogStreamType = "axiom"
 	LogStreamSentry               LogStreamType = "sentry"
-	LogStreamPostHogLogs          LogStreamType = "posthog_logs"
-	LogStreamPostHogErrorTracking LogStreamType = "posthog_error_tracking"
+	LogStreamPostHogLogs          LogStreamType = "postHogLogs"
+	LogStreamPostHogErrorTracking LogStreamType = "postHogErrorTracking"
 )
 
 // LogStreamTypes lists every sink, in the order the schema declares them.
