@@ -10,6 +10,15 @@ caveat that minor releases may still break.
 
 ## 0.3.0 (2026-10-14)
 
+### Fixed
+
+- `convex_log_stream` with a `posthog_logs` or `posthog_error_tracking` block
+  failed to create (HTTP 400: `unknown variant posthog_logs`): the
+  provider sent the stream type in snake_case, and the Deployment Platform API
+  expects `postHogLogs` and `postHogErrorTracking`. Reading such a stream back
+  failed the same way. The block names are unchanged. A test now pins every
+  stream type to the generated client's value.
+  ([#2](https://github.com/srs/terraform-provider-convex/issues/2))
 ### Added
 
 - `unique_name` on `convex_deploy_key` and `convex_preview_deploy_key`: the
